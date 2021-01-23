@@ -73,18 +73,18 @@ func EncodeRowKeyWithHandle(tableID int64, handle int64) kv.Key {
 // DecodeRecordKey decodes the key and gets the tableID, handle.
 func DecodeRecordKey(key kv.Key) (tableID int64, handle int64, err error) {
 	if len(key) == 0 {
-		return tableID, handle, errors.New("insufficient bytes to decode value")
+		return 0, 0, errors.New("insufficient bytes to decode value")
 	}
 	if !bytes.Equal(key[:tablePrefixLength], tablePrefix) {
-		return tableID, handle, errors.New("wrong table prefix of record key")
+		return 0, 0, errors.New("wrong table prefix of record key")
 	}
 	var remain []byte
 	remain, tableID, err = codec.DecodeInt(key[tablePrefixLength:])
 	if err != nil {
-		return tableID, handle, err
+		return 0, 0, err
 	}
 	if !bytes.Equal(remain[:recordPrefixSepLength], recordPrefixSep) {
-		return tableID, handle, errors.New("wrong record prefix of record key")
+		return 0, 0, errors.New("wrong record prefix of record key")
 	}
 	_, handle, err = codec.DecodeInt(remain[recordPrefixSepLength:])
 	return tableID, handle, err
@@ -110,18 +110,18 @@ func EncodeIndexSeekKey(tableID int64, idxID int64, encodedValue []byte) kv.Key 
 // DecodeIndexKeyPrefix decodes the key and gets the tableID, indexID, indexValues.
 func DecodeIndexKeyPrefix(key kv.Key) (tableID int64, indexID int64, indexValues []byte, err error) {
 	if len(key) == 0 {
-		return tableID, indexID, indexValues, errors.New("insufficient bytes to decode value")
+		return 0, 0, nil, errors.New("insufficient bytes to decode value")
 	}
 	if !bytes.Equal(key[:tablePrefixLength], tablePrefix) {
-		return tableID, indexID, indexValues, errors.New("wrong table prefix of index key")
+		return 0, 0, nil, errors.New("wrong table prefix of index key")
 	}
 	var remain []byte
 	remain, tableID, err = codec.DecodeInt(key[tablePrefixLength:])
 	if err != nil {
-		return tableID, indexID, indexValues, err
+		return 0, 0, nil, err
 	}
 	if !bytes.Equal(remain[:indexPrefixSepLength], indexPrefixSep) {
-		return tableID, indexID, indexValues, errors.New("wrong index prefix of index key")
+		return 0, 0, nil, errors.New("wrong index prefix of index key")
 	}
 	indexValues, indexID, err = codec.DecodeInt(remain[indexPrefixSepLength:])
 	return tableID, indexID, indexValues, err
